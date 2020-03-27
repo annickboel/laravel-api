@@ -5,18 +5,24 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\User;
 
+
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of User resources.
      *
      * @return \Illuminate\Http\Response
      */
   
     public function index()
     {
-        $users = User::all();
-        return response($users, 200);
+    	try {
+	        $users = User::all();
+	        return response($users, 200);
+    	}
+    	catch (Exception $e) {
+    		return response()->json(['error'=>'Internal Server Error'], 500);
+    	}
     }
     /**
      * Store a newly created resource in storage.
@@ -26,39 +32,57 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-      	$user = $request->all;
-    	return User::create($user, 201);
-
+      	try {
+      		$result = $request->validate([
+                'login' => 'required',
+                'password' => 'required',
+                'email' => 'required',
+                'name' => 'required',
+                'firstname' => 'required',
+                'age' => 'required'
+            ]);
+            if (isset($result->errors)) {
+                return response()->json($result, 400);
+            }
+            $user = new User();
+            $user->username = $request['login'];
+            $user->password = $request['password'];
+            $user->email = $request['email'];
+           	$user->firstname = $request['firstname'];
+            $user->name = $request['name']; 
+            $user->age = $request['age'];
+            $user->save();
+            return response()->json(['message'=>'User successfully created'], 200);
+    	}
+    	catch (Exception $e) {
+    		return response()->json(['error'=>'Internal Server Error'], 500);
+    	}
     }
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-    /**
-     * Update the specified resource in storage.
+     * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function login(Request $request)
     {
-        //
-    }
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+      	try {
+      		$result = $request->validate([
+                'login' => 'required',
+                'password' => 'required'
+            ]);
+            if (isset($result->errors)) {
+                return response()->json($result, 400);
+            }
+            $user = User::where('username', $request['login'])->where('password', $request['password'])->first();
+        	if ($user == null) {
+        		return response()->json(['error'=>'Bad request'], 400);
+        	}
+            return response()->json(['message'=>'User successfully authenticated'], 200);
+
+    	}
+    	catch (Exception $e) {
+    		return response()->json(['error'=>'Internal Server Error'], 500);
+    	}
     }
 }

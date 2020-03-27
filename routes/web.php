@@ -26,6 +26,6 @@ Route::get('restaurant/{id}', 'RestaurantController@show');
 Route::update('restaurant/{id}', 'RestaurantController@update');
 Route::delete('restaurant/{id}', 'RestaurantController@destroy');*/
 
-Auth::routes();
+//Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
